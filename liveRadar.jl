@@ -1,7 +1,6 @@
 __precompile__()
-#module liveRadar
+module liveRadar
 
-println("Compiling Libraries ...")
 using LibSerialPort
 using MAT
 using Plots
@@ -9,7 +8,7 @@ using DataStructures
 using FFTW
 using Statistics
 using Suppressor
-
+#import Base.Threads.@spawn
 
 
 function liveDoppler(port,baud)
@@ -111,7 +110,7 @@ function offlineDoppler(matfile)
     b=preload_buffer(bufferSize,maxSpeed)
 
     show_waterfall(b)
-    sleep(1)
+    #sleep(1)
     current_index = 1 # arrays start at 1 in Julia
     for i=1:(bytecount÷2):round_to(length(samples),bytecount÷2)
         t=samples[i:i+bytecount÷2-1] # simulated byte read from serial
@@ -119,7 +118,8 @@ function offlineDoppler(matfile)
         x=[x;t[t.<7000]] # simulate adding bytes to heap 
         # find pulses in the shorts since the last look
         doppler!(b,x[end-N:end],ovsDop*N,maxSpeed)
-        show_waterfall(b)
+		show_waterfall(b)
+        #@spawn show_waterfall(b)
     end
 end
 function liveRanging(port,baud)
@@ -181,7 +181,7 @@ function liveRanging(port,baud)
                     for pulse in pulses
                         ranging!(b,x[pulse:pulse+Np-1],nfft,maxSpeed,1, previous_frame)
                         #show_waterfall(b,true)
-                        if counter%15==0
+                        if counter%20==0
                             @sync show_waterfall(b,false)
                         end
                         counter=counter+1
@@ -230,7 +230,7 @@ function simliveRanging(matfile)
     x=[]
     #x=zeros(N)
     # initilize CircularBuffer
-    startS = 3996
+    startS = 1
     maxSpeed = 533
     bufferSize = 300
     b=preload_buffer(bufferSize,maxSpeed)
@@ -307,7 +307,7 @@ function offlineRanging(matfile)
 
     x=zeros(N)
     # initilize CircularBuffer
-    startS = 3996
+    startS = 1
     maxSpeed = 533
     bufferSize = 300
     b=preload_buffer(bufferSize,maxSpeed)
@@ -367,7 +367,7 @@ end
 function read_mat(filename)
     file = matopen(filename)
     y=read(file,"samples")
-    println(typeof(y))
+    #println(typeof(y))
     close(file)
     y=floor.(Int,y);
     return y
@@ -432,13 +432,13 @@ function save_mat_file(x,filename::String="sam.mat")
 end
 
 
-#end # end module
+end # end module
 
 function main(args)
-    if length(args) == 2
+    if length(args) <= 2
         println("Calling ",args[1]," on ", args[2])
         getfield(liveRadar,Symbol(args[1]))(args[2])
-    elseif length(args) == 3
+    elseif length(args) <= 3
         println("Calling ",args[1]," on port ", args[2], " at baud ", args[3])
         getfield(liveRadar,Symbol(args[1]))(args[2],parse(Int,args[3]))
     else
