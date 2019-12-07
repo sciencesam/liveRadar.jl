@@ -8,9 +8,11 @@ This program has functions including:
 - online ranging waterfall
 ## Function Calls
 Calls are simple, use the module liveRadar and the function
+```
 	liveRadar.offlineDoppler(MATFILE)
 	liveRadar.liveDoppler(PORT,BAUD,SAVE_FILE)
 	liveRadar.offlineRanging(MATFILE)
 	liveRadar.liveRanding(PORT,BAUD,SAVE_FILE)
+```
 
 
