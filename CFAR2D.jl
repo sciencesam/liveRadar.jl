@@ -21,7 +21,7 @@ function CFAR2D(inputmat,numGuardCells,numTrainCells,Pfa)
     N = length(filter(kernel->!iszero(kernel),kernel)) # number of non-zero elements
     kernel = (1/N) .* kernel
 
-    alpha = N*(Pfa^(1/N)-1) # multiplicative factor for thresholding
+    alpha = N*(Pfa^(-1/N)-1) # multiplicative factor for thresholding
 
     Pn = imfilter(inputmat,kernel)  # matrix of noise estimates for each point in the input matrix
 
